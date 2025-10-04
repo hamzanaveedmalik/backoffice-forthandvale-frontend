@@ -11,51 +11,75 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Package, Search, Filter, Download } from 'lucide-react'
-import { mockOrders } from '@/data/mockOrders'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { getAllOrders } from '@/api/orders'
 
 export default function Orders() {
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
+  const [orders, setOrders] = useState<any[]>([])
+  const [isLoading, setIsLoading] = useState(true)
 
-  const filteredOrders = mockOrders.filter((order) => {
+  useEffect(() => {
+    const fetchOrders = async () => {
+      setIsLoading(true)
+      const data = await getAllOrders('default')
+      setOrders(data)
+      setIsLoading(false)
+    }
+    fetchOrders()
+  }, [])
+
+  const filteredOrders = orders.filter((order) => {
     const matchesSearch =
-      order.orderNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      order.customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      order.product.name.toLowerCase().includes(searchTerm.toLowerCase())
+      order.orderNo?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      order.lead?.company?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      order.lead?.contactName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      order.items?.some((item: any) => 
+        item.description?.toLowerCase().includes(searchTerm.toLowerCase())
+      )
 
     const matchesStatus =
-      statusFilter === 'all' || order.status === statusFilter
+      statusFilter === 'all' || order.status?.toUpperCase() === statusFilter.toUpperCase()
 
     return matchesSearch && matchesStatus
   })
 
   const getStatusBadge = (status: string) => {
-    const statusConfig = {
-      pending: {
+    const normalizedStatus = status?.toUpperCase() || 'PENDING'
+    const statusConfig: Record<string, {variant: 'secondary' | 'default' | 'destructive', className: string}> = {
+      PENDING: {
         variant: 'secondary' as const,
         className: 'bg-yellow-100 text-yellow-800',
       },
-      processing: {
+      CONFIRMED: {
         variant: 'default' as const,
         className: 'bg-blue-100 text-blue-800',
       },
-      shipped: {
+      PRODUCTION: {
+        variant: 'default' as const,
+        className: 'bg-indigo-100 text-indigo-800',
+      },
+      QUALITY_CHECK: {
+        variant: 'default' as const,
+        className: 'bg-cyan-100 text-cyan-800',
+      },
+      SHIPPED: {
         variant: 'default' as const,
         className: 'bg-purple-100 text-purple-800',
       },
-      delivered: {
+      DELIVERED: {
         variant: 'default' as const,
         className: 'bg-green-100 text-green-800',
       },
-      cancelled: {
+      CANCELLED: {
         variant: 'destructive' as const,
         className: 'bg-red-100 text-red-800',
       },
     }
 
     const config =
-      statusConfig[status as keyof typeof statusConfig] || statusConfig.pending
+      statusConfig[normalizedStatus] || statusConfig.PENDING
 
     return (
       <Badge variant={config.variant} className={config.className}>
@@ -137,41 +161,57 @@ export default function Orders() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredOrders.map((order) => (
-                  <TableRow key={order.id} className="table-row">
-                    <TableCell className="font-medium">
-                      {order.orderNumber}
-                    </TableCell>
-                    <TableCell>
-                      <div>
-                        <div className="font-medium">{order.customer.name}</div>
-                        <div className="text-sm text-muted-foreground">
-                          {order.customer.company}
-                        </div>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div>
-                        <div className="font-medium">{order.product.name}</div>
-                        <div className="text-sm text-muted-foreground">
-                          SKU: {order.product.sku}
-                        </div>
-                      </div>
-                    </TableCell>
-                    <TableCell className="font-medium">
-                      ${order.amount.toFixed(2)}
-                    </TableCell>
-                    <TableCell>{getStatusBadge(order.status)}</TableCell>
-                    <TableCell className="text-muted-foreground">
-                      {new Date(order.orderDate).toLocaleDateString()}
-                    </TableCell>
-                    <TableCell>
-                      <Button variant="outline" size="sm">
-                        View Details
-                      </Button>
+                {isLoading ? (
+                  <TableRow>
+                    <TableCell colSpan={7} className="text-center py-8">
+                      <div className="text-muted-foreground">Loading orders...</div>
                     </TableCell>
                   </TableRow>
-                ))}
+                ) : filteredOrders.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={7} className="text-center py-8">
+                      <div className="text-muted-foreground">No orders found</div>
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  filteredOrders.map((order) => (
+                    <TableRow key={order.id} className="table-row">
+                      <TableCell className="font-medium">
+                        {order.orderNo}
+                      </TableCell>
+                      <TableCell>
+                        <div>
+                          <div className="font-medium">{order.lead?.contactName || 'N/A'}</div>
+                          <div className="text-sm text-muted-foreground">
+                            {order.lead?.company || 'No company'}
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div>
+                          <div className="font-medium">
+                            {order.items?.[0]?.description || 'No items'}
+                          </div>
+                          <div className="text-sm text-muted-foreground">
+                            {order.items?.length || 0} item(s)
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell className="font-medium">
+                        ${Number(order.total).toLocaleString()}
+                      </TableCell>
+                      <TableCell>{getStatusBadge(order.status)}</TableCell>
+                      <TableCell className="text-muted-foreground">
+                        {new Date(order.orderDate).toLocaleDateString()}
+                      </TableCell>
+                      <TableCell>
+                        <Button variant="outline" size="sm">
+                          View Details
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
               </TableBody>
             </Table>
           </div>

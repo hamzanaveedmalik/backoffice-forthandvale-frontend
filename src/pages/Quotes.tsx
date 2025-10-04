@@ -25,112 +25,31 @@ import {
   XCircle,
   AlertCircle,
 } from 'lucide-react'
-import { useState } from 'react'
-
-// Mock data - replace with real API calls
-const mockQuotes = [
-  {
-    id: '1',
-    leadId: '2',
-    lead: {
-      title: 'Luxury Handbag Collection',
-      company: 'Fashion Forward Ltd',
-      contactName: 'Emily Davis',
-    },
-    quoteNo: 'Q-2024-001',
-    currency: 'USD',
-    incoterm: 'FOB',
-    subtotal: 2500.0,
-    shipping: 150.0,
-    tax: 265.0,
-    discount: 0.0,
-    total: 2915.0,
-    validUntil: '2024-02-15T23:59:59Z',
-    status: 'SENT',
-    createdAt: '2024-01-10T14:20:00Z',
-    updatedAt: '2024-01-12T09:15:00Z',
-    lines: [
-      {
-        sku: 'HB-001',
-        description: 'Premium Leather Handbag - Black',
-        qty: 10,
-        unitPrice: 250.0,
-        lineTotal: 2500.0,
-      },
-    ],
-  },
-  {
-    id: '2',
-    leadId: '3',
-    lead: {
-      title: 'Executive Briefcase Order',
-      company: 'Global Enterprises',
-      contactName: 'Robert Brown',
-    },
-    quoteNo: 'Q-2024-002',
-    currency: 'USD',
-    incoterm: 'CIF',
-    subtotal: 4000.0,
-    shipping: 200.0,
-    tax: 420.0,
-    discount: 200.0,
-    total: 4420.0,
-    validUntil: '2024-02-20T23:59:59Z',
-    status: 'ACCEPTED',
-    createdAt: '2024-01-08T16:45:00Z',
-    updatedAt: '2024-01-14T11:30:00Z',
-    lines: [
-      {
-        sku: 'BC-001',
-        description: 'Custom Executive Briefcase',
-        qty: 5,
-        unitPrice: 800.0,
-        lineTotal: 4000.0,
-      },
-    ],
-  },
-  {
-    id: '3',
-    leadId: '1',
-    lead: {
-      title: 'Corporate Gift Order',
-      company: 'TechCorp Solutions',
-      contactName: 'John Smith',
-    },
-    quoteNo: 'Q-2024-003',
-    currency: 'USD',
-    incoterm: 'EXW',
-    subtotal: 1200.0,
-    shipping: 100.0,
-    tax: 130.0,
-    discount: 0.0,
-    total: 1430.0,
-    validUntil: '2024-02-10T23:59:59Z',
-    status: 'DRAFTING',
-    createdAt: '2024-01-15T10:30:00Z',
-    updatedAt: '2024-01-15T10:30:00Z',
-    lines: [
-      {
-        sku: 'PF-001',
-        description: 'Executive Leather Portfolio',
-        qty: 20,
-        unitPrice: 60.0,
-        lineTotal: 1200.0,
-      },
-    ],
-  },
-]
+import { useState, useEffect } from 'react'
+import { getAllQuotes } from '@/api/quotes'
 
 export default function Quotes() {
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
+  const [quotes, setQuotes] = useState<any[]>([])
+  const [isLoading, setIsLoading] = useState(true)
 
-  const filteredQuotes = mockQuotes.filter((quote) => {
+  useEffect(() => {
+    const fetchQuotes = async () => {
+      setIsLoading(true)
+      const data = await getAllQuotes('default')
+      setQuotes(data)
+      setIsLoading(false)
+    }
+    fetchQuotes()
+  }, [])
+
+  const filteredQuotes = quotes.filter((quote) => {
     const matchesSearch =
       quote.quoteNo.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      quote.lead.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      quote.lead.company.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      quote.lead.contactName.toLowerCase().includes(searchTerm.toLowerCase())
+      (quote.lead?.title || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (quote.lead?.company || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (quote.lead?.contactName || '').toLowerCase().includes(searchTerm.toLowerCase())
 
     const matchesStatus =
       statusFilter === 'all' || quote.status === statusFilter
@@ -140,6 +59,11 @@ export default function Quotes() {
 
   const getStatusBadge = (status: string) => {
     const statusConfig = {
+      DRAFT: {
+        variant: 'secondary' as const,
+        className: 'bg-gray-100 text-gray-800',
+        icon: Clock,
+      },
       DRAFTING: {
         variant: 'secondary' as const,
         className: 'bg-gray-100 text-gray-800',
@@ -168,7 +92,7 @@ export default function Quotes() {
     }
 
     const config =
-      statusConfig[status as keyof typeof statusConfig] || statusConfig.DRAFTING
+      statusConfig[status as keyof typeof statusConfig] || statusConfig.DRAFT
     const Icon = config.icon
 
     return (
@@ -184,12 +108,12 @@ export default function Quotes() {
 
   const getQuoteStats = () => {
     const stats = {
-      total: mockQuotes.length,
-      drafting: mockQuotes.filter((q) => q.status === 'DRAFTING').length,
-      sent: mockQuotes.filter((q) => q.status === 'SENT').length,
-      accepted: mockQuotes.filter((q) => q.status === 'ACCEPTED').length,
-      rejected: mockQuotes.filter((q) => q.status === 'REJECTED').length,
-      totalValue: mockQuotes.reduce((sum, q) => sum + Number(q.total), 0),
+      total: quotes.length,
+      drafting: quotes.filter((q) => q.status === 'DRAFT' || q.status === 'DRAFTING').length,
+      sent: quotes.filter((q) => q.status === 'SENT').length,
+      accepted: quotes.filter((q) => q.status === 'ACCEPTED').length,
+      rejected: quotes.filter((q) => q.status === 'REJECTED').length,
+      totalValue: quotes.reduce((sum, q) => sum + Number(q.total), 0),
     }
     return stats
   }
@@ -360,36 +284,49 @@ export default function Quotes() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredQuotes.map((quote) => (
-                  <TableRow key={quote.id} className="table-row">
-                    <TableCell>
-                      <div>
-                        <div className="font-medium">{quote.quoteNo}</div>
-                        <div className="text-sm text-muted-foreground">
-                          {quote.currency} • {quote.incoterm}
-                        </div>
-                      </div>
+                {isLoading ? (
+                  <TableRow>
+                    <TableCell colSpan={7} className="text-center py-8">
+                      <div className="text-muted-foreground">Loading quotes...</div>
                     </TableCell>
-                    <TableCell>
-                      <div>
-                        <div className="font-medium">{quote.lead.title}</div>
-                        <div className="text-sm text-muted-foreground">
-                          {quote.lead.company} - {quote.lead.contactName}
-                        </div>
-                      </div>
+                  </TableRow>
+                ) : filteredQuotes.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={7} className="text-center py-8">
+                      <div className="text-muted-foreground">No quotes found</div>
                     </TableCell>
-                    <TableCell>
-                      <div>
-                        <div className="font-medium">
-                          {quote.lines.length} item
-                          {quote.lines.length > 1 ? 's' : ''}
+                  </TableRow>
+                ) : (
+                  filteredQuotes.map((quote) => (
+                    <TableRow key={quote.id} className="table-row">
+                      <TableCell>
+                        <div>
+                          <div className="font-medium">{quote.quoteNo}</div>
+                          <div className="text-sm text-muted-foreground">
+                            ID: {quote.id}
+                          </div>
                         </div>
-                        <div className="text-sm text-muted-foreground">
-                          Qty:{' '}
-                          {quote.lines.reduce((sum, line) => sum + line.qty, 0)}
+                      </TableCell>
+                      <TableCell>
+                        <div>
+                          <div className="font-medium">{quote.lead?.title || 'N/A'}</div>
+                          <div className="text-sm text-muted-foreground">
+                            {quote.lead?.company} {quote.lead?.contactName && `- ${quote.lead?.contactName}`}
+                          </div>
                         </div>
-                      </div>
-                    </TableCell>
+                      </TableCell>
+                      <TableCell>
+                        <div>
+                          <div className="font-medium">
+                            {quote.items?.length || 0} item
+                            {(quote.items?.length || 0) > 1 ? 's' : ''}
+                          </div>
+                          <div className="text-sm text-muted-foreground">
+                            Qty:{' '}
+                            {quote.items?.reduce((sum: number, item: any) => sum + (item.quantity || 0), 0) || 0}
+                          </div>
+                        </div>
+                      </TableCell>
                     <TableCell>
                       <div>
                         <div className="font-medium">
@@ -458,7 +395,8 @@ export default function Quotes() {
                       </div>
                     </TableCell>
                   </TableRow>
-                ))}
+                  ))
+                )}
               </TableBody>
             </Table>
           </div>

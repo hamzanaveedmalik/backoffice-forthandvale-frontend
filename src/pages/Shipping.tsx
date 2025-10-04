@@ -10,42 +10,57 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Truck, Search, Filter, Package, Clock } from 'lucide-react'
-import { mockOrders } from '@/data/mockOrders'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { getShippingOrders } from '@/api/orders'
 
 export default function Shipping() {
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
+  const [orders, setOrders] = useState<any[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchOrders = async () => {
+      setIsLoading(true)
+      const data = await getShippingOrders('default')
+      setOrders(data)
+      setIsLoading(false)
+    }
+    fetchOrders()
+  }, [])
 
   // Filter orders that are shipped or delivered
-  const shippingOrders = mockOrders.filter(
-    (order) => order.status === 'shipped' || order.status === 'delivered'
+  const shippingOrders = orders.filter(
+    (order) => order.status === 'SHIPPED' || order.status === 'DELIVERED'
   )
 
   const filteredOrders = shippingOrders.filter((order) => {
     const matchesSearch =
-      order.orderNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      order.customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      order.product.name.toLowerCase().includes(searchTerm.toLowerCase())
+      order.orderNo?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      order.lead?.contactName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      order.lead?.company?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      order.items?.some((item: any) => 
+        item.description?.toLowerCase().includes(searchTerm.toLowerCase())
+      )
 
     const matchesStatus =
-      statusFilter === 'all' || order.status === statusFilter
+      statusFilter === 'all' || order.status?.toUpperCase() === statusFilter.toUpperCase()
 
     return matchesSearch && matchesStatus
   })
 
   const getShippingInfo = (order: any) => {
-    if (order.status === 'delivered') {
+    if (order.status === 'DELIVERED') {
       return {
         status: 'Delivered',
-        date: order.deliveryDate,
+        date: order.actualDeliveryDate,
         icon: <Package className="h-4 w-4" />,
         color: 'text-green-600',
       }
     } else {
       return {
         status: 'In Transit',
-        date: order.shippingDate,
+        date: order.expectedDeliveryDate,
         icon: <Truck className="h-4 w-4" />,
         color: 'text-blue-600',
       }
@@ -172,59 +187,73 @@ export default function Shipping() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredOrders.map((order) => {
-                  const shippingInfo = getShippingInfo(order)
-                  return (
-                    <TableRow key={order.id} className="table-row">
-                      <TableCell className="font-medium">
-                        {order.orderNumber}
-                      </TableCell>
-                      <TableCell>
-                        <div>
-                          <div className="font-medium">
-                            {order.customer.name}
+                {isLoading ? (
+                  <TableRow>
+                    <TableCell colSpan={7} className="text-center py-8">
+                      <div className="text-muted-foreground">Loading shipping orders...</div>
+                    </TableCell>
+                  </TableRow>
+                ) : filteredOrders.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={7} className="text-center py-8">
+                      <div className="text-muted-foreground">No shipping orders found</div>
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  filteredOrders.map((order) => {
+                    const shippingInfo = getShippingInfo(order)
+                    return (
+                      <TableRow key={order.id} className="table-row">
+                        <TableCell className="font-medium">
+                          {order.orderNo}
+                        </TableCell>
+                        <TableCell>
+                          <div>
+                            <div className="font-medium">
+                              {order.lead?.contactName || 'N/A'}
+                            </div>
+                            <div className="text-sm text-muted-foreground">
+                              {order.lead?.company || 'No company'}
+                            </div>
                           </div>
-                          <div className="text-sm text-muted-foreground">
-                            {order.customer.company}
+                        </TableCell>
+                        <TableCell>
+                          <div>
+                            <div className="font-medium">
+                              {order.items?.[0]?.description || 'No items'}
+                            </div>
+                            <div className="text-sm text-muted-foreground">
+                              {order.items?.length || 0} item(s)
+                            </div>
                           </div>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div>
-                          <div className="font-medium">
-                            {order.product.name}
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            {shippingInfo.icon}
+                            <span className={shippingInfo.color}>
+                              {shippingInfo.status}
+                            </span>
                           </div>
-                          <div className="text-sm text-muted-foreground">
-                            SKU: {order.product.sku}
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          {shippingInfo.icon}
-                          <span className={shippingInfo.color}>
-                            {shippingInfo.status}
-                          </span>
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-muted-foreground">
-                        {order.shippingDate
-                          ? new Date(order.shippingDate).toLocaleDateString()
-                          : '-'}
-                      </TableCell>
-                      <TableCell className="text-muted-foreground">
-                        {order.deliveryDate
-                          ? new Date(order.deliveryDate).toLocaleDateString()
-                          : '-'}
-                      </TableCell>
-                      <TableCell>
-                        <Button variant="outline" size="sm">
-                          Track Package
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  )
-                })}
+                        </TableCell>
+                        <TableCell className="text-muted-foreground">
+                          {order.orderDate
+                            ? new Date(order.orderDate).toLocaleDateString()
+                            : '-'}
+                        </TableCell>
+                        <TableCell className="text-muted-foreground">
+                          {order.actualDeliveryDate || order.expectedDeliveryDate
+                            ? new Date(order.actualDeliveryDate || order.expectedDeliveryDate).toLocaleDateString()
+                            : '-'}
+                        </TableCell>
+                        <TableCell>
+                          <Button variant="outline" size="sm">
+                            {order.trackingNumber ? 'Track' : 'Add Tracking'}
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    )
+                  })
+                )}
               </TableBody>
             </Table>
           </div>

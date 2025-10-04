@@ -22,103 +22,32 @@ import {
   CheckCircle,
   XCircle,
 } from 'lucide-react'
-import { useState } from 'react'
-
-// Mock data - replace with real API calls
-const mockSamples = [
-  {
-    id: '1',
-    leadId: '1',
-    lead: {
-      title: 'Corporate Gift Order',
-      company: 'TechCorp Solutions',
-      contactName: 'John Smith',
-    },
-    requestedBy: { fullName: 'Sarah Johnson' },
-    itemName: 'Executive Leather Portfolio',
-    quantity: 2,
-    costEstimate: 150.0,
-    shipTo: {
-      name: 'John Smith',
-      company: 'TechCorp Solutions',
-      address: '123 Business St, New York, NY 10001',
-      phone: '+1-555-0123',
-    },
-    status: 'REQUESTED',
-    courier: null,
-    trackingNumber: null,
-    requestedAt: '2024-01-15T10:30:00Z',
-    dispatchedAt: null,
-    deliveredAt: null,
-    createdAt: '2024-01-15T10:30:00Z',
-    updatedAt: '2024-01-15T10:30:00Z',
-  },
-  {
-    id: '2',
-    leadId: '2',
-    lead: {
-      title: 'Luxury Handbag Collection',
-      company: 'Fashion Forward Ltd',
-      contactName: 'Emily Davis',
-    },
-    requestedBy: { fullName: 'Mike Wilson' },
-    itemName: 'Premium Leather Handbag - Black',
-    quantity: 1,
-    costEstimate: 250.0,
-    shipTo: {
-      name: 'Emily Davis',
-      company: 'Fashion Forward Ltd',
-      address: '456 Fashion Ave, Los Angeles, CA 90210',
-      phone: '+1-555-0456',
-    },
-    status: 'DELIVERED',
-    courier: 'FedEx',
-    trackingNumber: 'FX123456789',
-    requestedAt: '2024-01-10T14:20:00Z',
-    dispatchedAt: '2024-01-12T09:15:00Z',
-    deliveredAt: '2024-01-14T16:30:00Z',
-    createdAt: '2024-01-10T14:20:00Z',
-    updatedAt: '2024-01-14T16:30:00Z',
-  },
-  {
-    id: '3',
-    leadId: '3',
-    lead: {
-      title: 'Executive Briefcase Order',
-      company: 'Global Enterprises',
-      contactName: 'Robert Brown',
-    },
-    requestedBy: { fullName: 'Sarah Johnson' },
-    itemName: 'Custom Executive Briefcase',
-    quantity: 1,
-    costEstimate: 400.0,
-    shipTo: {
-      name: 'Robert Brown',
-      company: 'Global Enterprises',
-      address: '789 Corporate Blvd, Chicago, IL 60601',
-      phone: '+1-555-0789',
-    },
-    status: 'IN_PROGRESS',
-    courier: null,
-    trackingNumber: null,
-    requestedAt: '2024-01-08T16:45:00Z',
-    dispatchedAt: null,
-    deliveredAt: null,
-    createdAt: '2024-01-08T16:45:00Z',
-    updatedAt: '2024-01-12T11:30:00Z',
-  },
-]
+import { useState, useEffect } from 'react'
+import { getAllSamples } from '@/api/samples'
 
 export default function Samples() {
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
+  const [samples, setSamples] = useState<any[]>([])
+  const [isLoading, setIsLoading] = useState(true)
 
-  const filteredSamples = mockSamples.filter((sample) => {
+  useEffect(() => {
+    const fetchSamples = async () => {
+      setIsLoading(true)
+      const data = await getAllSamples('default')
+      setSamples(data)
+      setIsLoading(false)
+    }
+    fetchSamples()
+  }, [])
+
+  const filteredSamples = samples.filter((sample) => {
+    const products = Array.isArray(sample.products) ? sample.products.join(' ') : ''
     const matchesSearch =
-      sample.itemName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      sample.lead.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      sample.lead.company.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      sample.lead.contactName.toLowerCase().includes(searchTerm.toLowerCase())
+      products.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (sample.lead?.title || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (sample.lead?.company || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (sample.lead?.contactName || '').toLowerCase().includes(searchTerm.toLowerCase())
 
     const matchesStatus =
       statusFilter === 'all' || sample.status === statusFilter
@@ -133,12 +62,12 @@ export default function Samples() {
         className: 'bg-blue-100 text-blue-800',
         icon: Clock,
       },
-      IN_PROGRESS: {
+      PREPARING: {
         variant: 'default' as const,
         className: 'bg-yellow-100 text-yellow-800',
         icon: Package,
       },
-      DISPATCHED: {
+      SHIPPED: {
         variant: 'default' as const,
         className: 'bg-purple-100 text-purple-800',
         icon: Truck,
@@ -148,7 +77,17 @@ export default function Samples() {
         className: 'bg-green-100 text-green-800',
         icon: CheckCircle,
       },
-      CANCELLED: {
+      FEEDBACK_PENDING: {
+        variant: 'default' as const,
+        className: 'bg-blue-100 text-blue-800',
+        icon: Clock,
+      },
+      APPROVED: {
+        variant: 'default' as const,
+        className: 'bg-green-100 text-green-800',
+        icon: CheckCircle,
+      },
+      REJECTED: {
         variant: 'destructive' as const,
         className: 'bg-red-100 text-red-800',
         icon: XCircle,
@@ -173,11 +112,11 @@ export default function Samples() {
 
   const getSampleStats = () => {
     const stats = {
-      total: mockSamples.length,
-      requested: mockSamples.filter((s) => s.status === 'REQUESTED').length,
-      inProgress: mockSamples.filter((s) => s.status === 'IN_PROGRESS').length,
-      dispatched: mockSamples.filter((s) => s.status === 'DISPATCHED').length,
-      delivered: mockSamples.filter((s) => s.status === 'DELIVERED').length,
+      total: samples.length,
+      requested: samples.filter((s) => s.status === 'REQUESTED').length,
+      preparing: samples.filter((s) => s.status === 'PREPARING').length,
+      shipped: samples.filter((s) => s.status === 'SHIPPED').length,
+      delivered: samples.filter((s) => s.status === 'DELIVERED').length,
     }
     return stats
   }
@@ -232,13 +171,13 @@ export default function Samples() {
         <Card className="dashboard-card">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              In Progress
+              Preparing
             </CardTitle>
             <Package className="h-4 w-4 text-primary" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-foreground">
-              {stats.inProgress}
+              {stats.preparing}
             </div>
             <p className="text-xs text-muted-foreground mt-1">Being prepared</p>
           </CardContent>
@@ -247,13 +186,13 @@ export default function Samples() {
         <Card className="dashboard-card">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              Dispatched
+              Shipped
             </CardTitle>
             <Truck className="h-4 w-4 text-primary" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-foreground">
-              {stats.dispatched}
+              {stats.shipped}
             </div>
             <p className="text-xs text-muted-foreground mt-1">In transit</p>
           </CardContent>
@@ -343,81 +282,95 @@ export default function Samples() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredSamples.map((sample) => (
-                  <TableRow key={sample.id} className="table-row">
-                    <TableCell>
-                      <div>
-                        <div className="font-medium">{sample.itemName}</div>
-                        <div className="text-sm text-muted-foreground">
-                          ID: {sample.id}
-                        </div>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div>
-                        <div className="font-medium">{sample.lead.title}</div>
-                        <div className="text-sm text-muted-foreground">
-                          {sample.lead.company} - {sample.lead.contactName}
-                        </div>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="font-medium">{sample.quantity}</div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="font-medium">
-                        ${sample.costEstimate?.toFixed(2) || 'TBD'}
-                      </div>
-                    </TableCell>
-                    <TableCell>{getStatusBadge(sample.status)}</TableCell>
-                    <TableCell>
-                      {sample.trackingNumber ? (
-                        <div>
-                          <div className="font-medium">{sample.courier}</div>
-                          <div className="text-sm text-muted-foreground">
-                            {sample.trackingNumber}
-                          </div>
-                        </div>
-                      ) : (
-                        <span className="text-muted-foreground">-</span>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <div className="text-sm">
-                        {sample.requestedBy.fullName}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="text-sm space-y-1">
-                        <div className="flex items-center gap-1">
-                          <Calendar className="h-3 w-3" />
-                          Requested:{' '}
-                          {new Date(sample.requestedAt).toLocaleDateString()}
-                        </div>
-                        {sample.dispatchedAt && (
-                          <div className="flex items-center gap-1">
-                            <Truck className="h-3 w-3" />
-                            Shipped:{' '}
-                            {new Date(sample.dispatchedAt).toLocaleDateString()}
-                          </div>
-                        )}
-                        {sample.deliveredAt && (
-                          <div className="flex items-center gap-1">
-                            <CheckCircle className="h-3 w-3" />
-                            Delivered:{' '}
-                            {new Date(sample.deliveredAt).toLocaleDateString()}
-                          </div>
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <Button variant="outline" size="sm">
-                        <Eye className="h-4 w-4 mr-1" />
-                        View
-                      </Button>
+                {isLoading ? (
+                  <TableRow>
+                    <TableCell colSpan={9} className="text-center py-8">
+                      <div className="text-muted-foreground">Loading samples...</div>
                     </TableCell>
                   </TableRow>
-                ))}
+                ) : filteredSamples.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={9} className="text-center py-8">
+                      <div className="text-muted-foreground">No samples found</div>
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  filteredSamples.map((sample) => (
+                    <TableRow key={sample.id} className="table-row">
+                      <TableCell>
+                        <div>
+                          <div className="font-medium">
+                            {sample.products?.join(', ') || 'No products'}
+                          </div>
+                          <div className="text-sm text-muted-foreground">
+                            ID: {sample.id}
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div>
+                          <div className="font-medium">{sample.lead?.title || 'N/A'}</div>
+                          <div className="text-sm text-muted-foreground">
+                            {sample.lead?.company} {sample.lead?.contactName && `- ${sample.lead?.contactName}`}
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="font-medium">{sample.products?.length || 0}</div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="font-medium">-</div>
+                      </TableCell>
+                      <TableCell>{getStatusBadge(sample.status)}</TableCell>
+                      <TableCell>
+                        {sample.trackingNumber ? (
+                          <div>
+                            <div className="font-medium">Tracking</div>
+                            <div className="text-sm text-muted-foreground">
+                              {sample.trackingNumber}
+                            </div>
+                          </div>
+                        ) : (
+                          <span className="text-muted-foreground">-</span>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        <div className="text-sm">
+                          {sample.assignee?.fullName || 'Unassigned'}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="text-sm space-y-1">
+                          <div className="flex items-center gap-1">
+                            <Calendar className="h-3 w-3" />
+                            Requested:{' '}
+                            {new Date(sample.requestedDate).toLocaleDateString()}
+                          </div>
+                          {sample.shippedDate && (
+                            <div className="flex items-center gap-1">
+                              <Truck className="h-3 w-3" />
+                              Shipped:{' '}
+                              {new Date(sample.shippedDate).toLocaleDateString()}
+                            </div>
+                          )}
+                          {sample.deliveredDate && (
+                            <div className="flex items-center gap-1">
+                              <CheckCircle className="h-3 w-3" />
+                              Delivered:{' '}
+                              {new Date(sample.deliveredDate).toLocaleDateString()}
+                            </div>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Button variant="outline" size="sm">
+                          <Eye className="h-4 w-4 mr-1" />
+                          View
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
               </TableBody>
             </Table>
           </div>
