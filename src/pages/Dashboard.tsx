@@ -38,6 +38,7 @@ import {
   autoGeneratePriorityActions,
   type PriorityAction,
 } from '@/api/priorityActions'
+import { ExcelUpload } from '@/components/ExcelUpload'
 
 // Mock data for Lead Source Performance
 const leadSourcePerformance = [
@@ -198,20 +199,21 @@ export default function Dashboard() {
   const [isLoading, setIsLoading] = useState(true)
   const [isGenerating, setIsGenerating] = useState(false)
 
-  // Fetch today's priority actions on component mount
-  useEffect(() => {
-    const fetchPriorityActions = async () => {
-      try {
-        setIsLoading(true)
-        const actions = await getTodaysPriorityActions('default')
-        setTodaysPriorityActions(actions)
-      } catch (error) {
-        console.error('Error fetching priority actions:', error)
-      } finally {
-        setIsLoading(false)
-      }
+  // Fetch today's priority actions
+  const fetchPriorityActions = async () => {
+    try {
+      setIsLoading(true)
+      const actions = await getTodaysPriorityActions('default')
+      setTodaysPriorityActions(actions)
+    } catch (error) {
+      console.error('Error fetching priority actions:', error)
+    } finally {
+      setIsLoading(false)
     }
+  }
 
+  // Fetch on component mount
+  useEffect(() => {
     fetchPriorityActions()
   }, [])
 
@@ -391,6 +393,11 @@ export default function Dashboard() {
                     </span>
                   </div>
                 </div>
+                <ExcelUpload
+                  onSuccess={() => {
+                    fetchPriorityActions()
+                  }}
+                />
                 <Button
                   onClick={handleAutoGenerate}
                   disabled={isGenerating}
