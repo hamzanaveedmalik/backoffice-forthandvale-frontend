@@ -1,0 +1,131 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Leather Goods Dashboard Design System - Rich, Professional Theme */
+
+@layer base {
+  :root {
+    /* Rich leather-inspired background */
+    --background: 35 15% 98%;
+    --foreground: 30 15% 12%;
+
+    /* Card system with warm tones */
+    --card: 0 0% 100%;
+    --card-foreground: 30 15% 12%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 30 15% 12%;
+
+    /* Primary: Deep purple brand color */
+    --primary: 260 82% 28%;
+    --primary-foreground: 0 0% 100%;
+    --primary-hover: 260 82% 22%;
+
+    /* Secondary: Warm cream */
+    --secondary: 35 25% 92%;
+    --secondary-foreground: 30 15% 12%;
+
+    /* Muted tones */
+    --muted: 35 20% 95%;
+    --muted-foreground: 30 12% 45%;
+
+    /* Accent: Warm amber */
+    --accent: 40 85% 65%;
+    --accent-foreground: 30 15% 12%;
+
+    /* Status colors for orders */
+    --status-pending: 45 100% 70%;
+    --status-processing: 220 70% 60%;
+    --status-shipped: 25 85% 55%;
+    --status-delivered: 120 60% 50%;
+
+    /* Professional neutrals */
+    --border: 35 15% 88%;
+    --input: 35 15% 92%;
+    --ring: 260 82% 28%;
+
+    --radius: 0.75rem;
+
+    --sidebar-background: 0 0% 98%;
+
+    --sidebar-foreground: 240 5.3% 26.1%;
+
+    --sidebar-primary: 260 82% 28%;
+
+    --sidebar-primary-foreground: 0 0% 100%;
+
+    --sidebar-accent: 240 4.8% 95.9%;
+
+    --sidebar-accent-foreground: 240 5.9% 10%;
+
+    --sidebar-border: 220 13% 91%;
+
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  .dark {
+    --background: 30 15% 8%;
+    --foreground: 35 25% 95%;
+
+    --card: 30 15% 10%;
+    --card-foreground: 35 25% 95%;
+
+    --popover: 30 15% 10%;
+    --popover-foreground: 35 25% 95%;
+
+    --primary: 260 82% 35%;
+    --primary-foreground: 0 0% 100%;
+    --primary-hover: 260 82% 30%;
+
+    --secondary: 30 15% 15%;
+    --secondary-foreground: 35 25% 95%;
+
+    --muted: 30 15% 15%;
+    --muted-foreground: 35 15% 65%;
+
+    --accent: 40 85% 65%;
+    --accent-foreground: 30 15% 8%;
+
+    --border: 30 15% 20%;
+    --input: 30 15% 15%;
+    --ring: 260 82% 35%;
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 260 82% 35%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+  }
+}
+
+/* Custom animations and effects */
+@layer components {
+  .table-row {
+    @apply hover:bg-muted/50 transition-colors duration-150 border-b border-border/50;
+  }
+
+  .dashboard-card {
+    @apply bg-card border border-border/50 rounded-lg p-6 shadow-sm hover:shadow-md transition-all duration-200;
+  }
+
+  .sidebar-item {
+    @apply flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-muted;
+  }
+
+  .sidebar-item.active {
+    @apply bg-primary text-primary-foreground hover:bg-primary/90;
+  }
+}
