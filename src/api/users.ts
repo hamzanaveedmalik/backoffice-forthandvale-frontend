@@ -10,7 +10,7 @@ export interface CreateUserData {
   role: BackendRole;
 }
 
-const API_BASE_URL = (import.meta as any).env?.VITE_API_URL || 'https://backoffice-backend.vercel.app/api';
+const API_BASE_URL = (import.meta as any).env?.VITE_API_URL || 'https://backoffice-forthandvale-backend.vercel.app/api';
 
 export async function getAllUsers(): Promise<User[]> {
   const response = await fetch(`${API_BASE_URL}/users`);

@@ -1,4 +1,4 @@
-const API_BASE_URL = (import.meta as any).env?.VITE_API_URL || 'https://backoffice-backend.vercel.app/api'
+const API_BASE_URL = (import.meta as any).env?.VITE_API_URL || 'https://backoffice-forthandvale-backend.vercel.app/api'
 
 export interface PriorityAction {
   id: string

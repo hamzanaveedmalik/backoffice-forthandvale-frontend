@@ -53,7 +53,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       const API_BASE_URL =
         (import.meta as any).env?.VITE_API_URL ||
-        'https://backoffice-backend.vercel.app/api'
+        'https://backoffice-forthandvale-backend.vercel.app/api'
       const response = await fetch(`${API_BASE_URL}/auth/login`, {
         method: 'POST',
         headers: {
