@@ -1,6 +1,6 @@
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
   Package,
   TrendingUp,
@@ -27,18 +27,18 @@ import {
   PieChart,
   Activity,
   RefreshCw,
-} from 'lucide-react'
-import { mockOrders } from '@/data/mockOrders'
-import { useAuth } from '@/contexts/AuthContext'
-import { RoleProtectedRoute } from '@/components/RoleProtectedRoute'
-import { Link } from 'react-router-dom'
-import { useState, useEffect } from 'react'
+} from 'lucide-react';
+import { mockOrders } from '@/data/mockOrders';
+import { useAuth } from '@/contexts/AuthContext';
+import { RoleProtectedRoute } from '@/components/RoleProtectedRoute';
+import { Link } from 'react-router-dom';
+import { useState, useEffect } from 'react';
 import {
   getTodaysPriorityActions,
   autoGeneratePriorityActions,
   type PriorityAction,
-} from '@/api/priorityActions'
-import { ExcelUpload } from '@/components/ExcelUpload'
+} from '@/api/priorityActions';
+import { ExcelUpload } from '@/components/ExcelUpload';
 
 // Mock data for Lead Source Performance
 const leadSourcePerformance = [
@@ -112,202 +112,158 @@ const leadSourcePerformance = [
     trend: '+15%',
     trendDirection: 'up',
   },
-]
+];
 
 // Mock data for Pipeline Value & Forecast
 const pipelineData = {
-  totalPipeline: 125000,
-  qualified: 85000,
-  quoted: 45000,
-  closingSoon: 28000,
+  totalPipeline: 10000,
+  qualified: 0,
+  quoted: 10000,
+  closingSoon: 0,
   monthlyTarget: 35000,
-  currentProgress: 80, // 80% of monthly target
-  expectedClosures: 28000,
-  dealsClosingThisWeek: 3,
-  dealsClosingNextWeek: 2,
-  dealsClosingThisMonth: 5,
-  averageDealSize: 25000,
-  winRate: 68,
-  salesVelocity: 18500, // Average revenue per week
-  forecastAccuracy: 85,
-  pipelineHealth: 'excellent',
+  currentProgress: 29, // ~29% of monthly target
+  expectedClosures: 5000,
+  dealsClosingThisWeek: 0,
+  dealsClosingNextWeek: 0,
+  dealsClosingThisMonth: 1,
+  averageDealSize: 10000,
+  winRate: 50,
+  salesVelocity: 0,
+  forecastAccuracy: 50,
+  pipelineHealth: 'good',
   riskLevel: 'low',
   opportunities: [
     {
       id: 1,
-      name: 'TechCorp Solutions - Corporate Gifts',
+      name: 'The ColeMax Group',
       stage: 'quoted',
-      value: 15000,
-      probability: 75,
-      closeDate: '2024-02-15',
-      daysToClose: 12,
-      owner: 'Sarah Johnson',
+      value: 10000,
+      probability: 50,
+      closeDate: '2024-03-01',
+      daysToClose: 15,
+      owner: 'Forth and Vale Core Group',
       status: 'on-track',
-    },
-    {
-      id: 2,
-      name: 'Fashion Forward Ltd - Handbag Collection',
-      stage: 'closing',
-      value: 25000,
-      probability: 90,
-      closeDate: '2024-02-08',
-      daysToClose: 5,
-      owner: 'Mike Wilson',
-      status: 'hot',
-    },
-    {
-      id: 3,
-      name: 'Global Enterprises - Executive Briefcases',
-      stage: 'qualified',
-      value: 35000,
-      probability: 60,
-      closeDate: '2024-02-28',
-      daysToClose: 25,
-      owner: 'Sarah Johnson',
-      status: 'on-track',
-    },
-    {
-      id: 4,
-      name: 'Luxury Retail Co - New Inquiry',
-      stage: 'quoted',
-      value: 18000,
-      probability: 80,
-      closeDate: '2024-02-20',
-      daysToClose: 17,
-      owner: 'Mike Wilson',
-      status: 'hot',
-    },
-    {
-      id: 5,
-      name: 'Corporate Gifts Inc - Sample Follow-up',
-      stage: 'qualified',
-      value: 12000,
-      probability: 45,
-      closeDate: '2024-03-05',
-      daysToClose: 30,
-      owner: 'Sarah Johnson',
-      status: 'at-risk',
     },
   ],
-}
+};
 
 export default function Dashboard() {
-  const { currentUser } = useAuth()
+  const { currentUser } = useAuth();
   const [todaysPriorityActions, setTodaysPriorityActions] = useState<
     PriorityAction[]
-  >([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [isGenerating, setIsGenerating] = useState(false)
+  >([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isGenerating, setIsGenerating] = useState(false);
 
   // Fetch today's priority actions
   const fetchPriorityActions = async () => {
     try {
-      setIsLoading(true)
-      const actions = await getTodaysPriorityActions('default')
-      setTodaysPriorityActions(actions)
+      setIsLoading(true);
+      const actions = await getTodaysPriorityActions('default');
+      setTodaysPriorityActions(actions);
     } catch (error) {
-      console.error('Error fetching priority actions:', error)
+      console.error('Error fetching priority actions:', error);
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   // Fetch on component mount
   useEffect(() => {
-    fetchPriorityActions()
-  }, [])
+    fetchPriorityActions();
+  }, []);
 
   // Auto-generate priority actions
   const handleAutoGenerate = async () => {
     try {
-      setIsGenerating(true)
-      const result = await autoGeneratePriorityActions('default')
-      console.log(`Generated ${result.count} new priority actions`)
+      setIsGenerating(true);
+      const result = await autoGeneratePriorityActions('default');
+      console.log(`Generated ${result.count} new priority actions`);
 
       // Refresh the actions list
-      const actions = await getTodaysPriorityActions('default')
-      setTodaysPriorityActions(actions)
+      const actions = await getTodaysPriorityActions('default');
+      setTodaysPriorityActions(actions);
     } catch (error) {
-      console.error('Error auto-generating priority actions:', error)
+      console.error('Error auto-generating priority actions:', error);
     } finally {
-      setIsGenerating(false)
+      setIsGenerating(false);
     }
-  }
+  };
 
-  const totalOrders = mockOrders.length
+  const totalOrders = mockOrders.length;
   const shippedOrders = mockOrders.filter(
     (order) => order.status === 'shipped'
-  ).length
+  ).length;
   const deliveredOrders = mockOrders.filter(
     (order) => order.status === 'delivered'
-  ).length
-  const totalRevenue = mockOrders.reduce((sum, order) => sum + order.amount, 0)
+  ).length;
+  const totalRevenue = mockOrders.reduce((sum, order) => sum + order.amount, 0);
 
   // Calculate priority action stats
   const highPriorityCount = todaysPriorityActions.filter(
     (task) => task.priority === 'HIGH' || task.priority === 'URGENT'
-  ).length
+  ).length;
   const mediumPriorityCount = todaysPriorityActions.filter(
     (task) => task.priority === 'MEDIUM'
-  ).length
+  ).length;
   const totalValue = todaysPriorityActions.reduce((sum, task) => {
-    const value = task.metadata?.leadValue || task.metadata?.quoteValue || 0
-    return sum + (typeof value === 'number' ? value : 0)
-  }, 0)
+    const value = task.metadata?.leadValue || task.metadata?.quoteValue || 0;
+    return sum + (typeof value === 'number' ? value : 0);
+  }, 0);
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
       case 'HIGH':
       case 'URGENT':
-        return 'border-red-200 bg-red-50 text-red-800'
+        return 'border-red-200 bg-red-50 text-red-800';
       case 'MEDIUM':
-        return 'border-yellow-200 bg-yellow-50 text-yellow-800'
+        return 'border-yellow-200 bg-yellow-50 text-yellow-800';
       case 'LOW':
-        return 'border-gray-200 bg-gray-50 text-gray-800'
+        return 'border-gray-200 bg-gray-50 text-gray-800';
       default:
-        return 'border-gray-200 bg-gray-50 text-gray-800'
+        return 'border-gray-200 bg-gray-50 text-gray-800';
     }
-  }
+  };
 
   const getActionIcon = (type: string) => {
     switch (type) {
       case 'FOLLOW_UP':
-        return <Phone className="h-4 w-4" />
+        return <Phone className="h-4 w-4" />;
       case 'SAMPLE_DISPATCH':
-        return <Package className="h-4 w-4" />
+        return <Package className="h-4 w-4" />;
       case 'QUOTE_EXPIRING':
-        return <FileText className="h-4 w-4" />
+        return <FileText className="h-4 w-4" />;
       case 'NEW_LEAD_RESPONSE':
-        return <Users className="h-4 w-4" />
+        return <Users className="h-4 w-4" />;
       case 'SAMPLE_FOLLOW_UP':
-        return <Package className="h-4 w-4" />
+        return <Package className="h-4 w-4" />;
       case 'QUOTE_FOLLOW_UP':
-        return <FileText className="h-4 w-4" />
+        return <FileText className="h-4 w-4" />;
       case 'ORDER_FOLLOW_UP':
-        return <Truck className="h-4 w-4" />
+        return <Truck className="h-4 w-4" />;
       case 'PAYMENT_FOLLOW_UP':
-        return <DollarSign className="h-4 w-4" />
+        return <DollarSign className="h-4 w-4" />;
       default:
-        return <Clock className="h-4 w-4" />
+        return <Clock className="h-4 w-4" />;
     }
-  }
+  };
 
   const formatDueTime = (dueDate: string) => {
-    const now = new Date()
-    const due = new Date(dueDate)
-    const diffMs = due.getTime() - now.getTime()
-    const diffHours = Math.round(diffMs / (1000 * 60 * 60))
+    const now = new Date();
+    const due = new Date(dueDate);
+    const diffMs = due.getTime() - now.getTime();
+    const diffHours = Math.round(diffMs / (1000 * 60 * 60));
 
     if (diffHours < 0) {
-      return 'OVERDUE'
+      return 'OVERDUE';
     } else if (diffHours < 1) {
-      return 'ASAP'
+      return 'ASAP';
     } else if (diffHours < 24) {
-      return `${diffHours}h`
+      return `${diffHours}h`;
     } else {
-      return due.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      return due.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     }
-  }
+  };
 
   const stats = [
     {
@@ -334,7 +290,7 @@ export default function Dashboard() {
       icon: CheckCircle,
       description: 'Successfully delivered',
     },
-  ]
+  ];
 
   return (
     <RoleProtectedRoute requiredPermission="canViewDashboard">
@@ -395,7 +351,7 @@ export default function Dashboard() {
                 </div>
                 <ExcelUpload
                   onSuccess={() => {
-                    fetchPriorityActions()
+                    fetchPriorityActions();
                   }}
                 />
                 <Button
@@ -586,13 +542,13 @@ export default function Dashboard() {
           <CardContent>
             <div className="space-y-4">
               {leadSourcePerformance.map((source) => {
-                const Icon = source.icon
+                const Icon = source.icon;
                 const isBest =
                   source.conversion ===
-                  Math.max(...leadSourcePerformance.map((s) => s.conversion))
+                  Math.max(...leadSourcePerformance.map((s) => s.conversion));
                 const isWorst =
                   source.conversion ===
-                  Math.min(...leadSourcePerformance.map((s) => s.conversion))
+                  Math.min(...leadSourcePerformance.map((s) => s.conversion));
 
                 return (
                   <div
@@ -705,7 +661,7 @@ export default function Dashboard() {
                       </div>
                     </div>
                   </div>
-                )
+                );
               })}
             </div>
 
@@ -963,28 +919,28 @@ export default function Dashboard() {
                   const getStatusColor = (status: string) => {
                     switch (status) {
                       case 'hot':
-                        return 'border-red-200 bg-red-50 text-red-800'
+                        return 'border-red-200 bg-red-50 text-red-800';
                       case 'on-track':
-                        return 'border-green-200 bg-green-50 text-green-800'
+                        return 'border-green-200 bg-green-50 text-green-800';
                       case 'at-risk':
-                        return 'border-yellow-200 bg-yellow-50 text-yellow-800'
+                        return 'border-yellow-200 bg-yellow-50 text-yellow-800';
                       default:
-                        return 'border-gray-200 bg-gray-50 text-gray-800'
+                        return 'border-gray-200 bg-gray-50 text-gray-800';
                     }
-                  }
+                  };
 
                   const getStageColor = (stage: string) => {
                     switch (stage) {
                       case 'qualified':
-                        return 'bg-green-100 text-green-800'
+                        return 'bg-green-100 text-green-800';
                       case 'quoted':
-                        return 'bg-yellow-100 text-yellow-800'
+                        return 'bg-yellow-100 text-yellow-800';
                       case 'closing':
-                        return 'bg-red-100 text-red-800'
+                        return 'bg-red-100 text-red-800';
                       default:
-                        return 'bg-gray-100 text-gray-800'
+                        return 'bg-gray-100 text-gray-800';
                     }
-                  }
+                  };
 
                   return (
                     <div
@@ -1024,7 +980,7 @@ export default function Dashboard() {
                         </div>
                       </div>
                     </div>
-                  )
+                  );
                 })}
               </div>
             </div>
@@ -1134,5 +1090,5 @@ export default function Dashboard() {
         </Card>
       </div>
     </RoleProtectedRoute>
-  )
+  );
 }
