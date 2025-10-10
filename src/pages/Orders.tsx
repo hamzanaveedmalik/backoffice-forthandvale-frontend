@@ -1,7 +1,7 @@
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import {
   Table,
   TableBody,
@@ -9,45 +9,51 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table'
-import { Package, Search, Filter, Download } from 'lucide-react'
-import { useState, useEffect } from 'react'
-import { getAllOrders } from '@/api/orders'
+} from '@/components/ui/table';
+import { Package, Search, Filter, Download } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { getAllOrders } from '@/api/orders';
 
 export default function Orders() {
-  const [searchTerm, setSearchTerm] = useState('')
-  const [statusFilter, setStatusFilter] = useState('all')
-  const [orders, setOrders] = useState<any[]>([])
-  const [isLoading, setIsLoading] = useState(true)
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [orders, setOrders] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchOrders = async () => {
-      setIsLoading(true)
-      const data = await getAllOrders('default')
-      setOrders(data)
-      setIsLoading(false)
-    }
-    fetchOrders()
-  }, [])
+      setIsLoading(true);
+      const data = await getAllOrders('default');
+      setOrders(data);
+      setIsLoading(false);
+    };
+    fetchOrders();
+  }, []);
 
   const filteredOrders = orders.filter((order) => {
     const matchesSearch =
       order.orderNo?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       order.lead?.company?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      order.lead?.contactName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      order.items?.some((item: any) => 
+      order.lead?.contactName
+        ?.toLowerCase()
+        .includes(searchTerm.toLowerCase()) ||
+      order.items?.some((item: any) =>
         item.description?.toLowerCase().includes(searchTerm.toLowerCase())
-      )
+      );
 
     const matchesStatus =
-      statusFilter === 'all' || order.status?.toUpperCase() === statusFilter.toUpperCase()
+      statusFilter === 'all' ||
+      order.status?.toUpperCase() === statusFilter.toUpperCase();
 
-    return matchesSearch && matchesStatus
-  })
+    return matchesSearch && matchesStatus;
+  });
 
   const getStatusBadge = (status: string) => {
-    const normalizedStatus = status?.toUpperCase() || 'PENDING'
-    const statusConfig: Record<string, {variant: 'secondary' | 'default' | 'destructive', className: string}> = {
+    const normalizedStatus = status?.toUpperCase() || 'PENDING';
+    const statusConfig: Record<
+      string,
+      { variant: 'secondary' | 'default' | 'destructive'; className: string }
+    > = {
       PENDING: {
         variant: 'secondary' as const,
         className: 'bg-yellow-100 text-yellow-800',
@@ -76,17 +82,16 @@ export default function Orders() {
         variant: 'destructive' as const,
         className: 'bg-red-100 text-red-800',
       },
-    }
+    };
 
-    const config =
-      statusConfig[normalizedStatus] || statusConfig.PENDING
+    const config = statusConfig[normalizedStatus] || statusConfig.PENDING;
 
     return (
       <Badge variant={config.variant} className={config.className}>
         {status.charAt(0).toUpperCase() + status.slice(1)}
       </Badge>
-    )
-  }
+    );
+  };
 
   return (
     <div className="p-8 space-y-8">
@@ -164,13 +169,17 @@ export default function Orders() {
                 {isLoading ? (
                   <TableRow>
                     <TableCell colSpan={7} className="text-center py-8">
-                      <div className="text-muted-foreground">Loading orders...</div>
+                      <div className="text-muted-foreground">
+                        Loading orders...
+                      </div>
                     </TableCell>
                   </TableRow>
                 ) : filteredOrders.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={7} className="text-center py-8">
-                      <div className="text-muted-foreground">No orders found</div>
+                      <div className="text-muted-foreground">
+                        No orders found
+                      </div>
                     </TableCell>
                   </TableRow>
                 ) : (
@@ -181,7 +190,9 @@ export default function Orders() {
                       </TableCell>
                       <TableCell>
                         <div>
-                          <div className="font-medium">{order.lead?.contactName || 'N/A'}</div>
+                          <div className="font-medium">
+                            {order.lead?.contactName || 'N/A'}
+                          </div>
                           <div className="text-sm text-muted-foreground">
                             {order.lead?.company || 'No company'}
                           </div>
@@ -218,5 +229,5 @@ export default function Orders() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

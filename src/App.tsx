@@ -3,19 +3,20 @@ import {
   Routes,
   Route,
   Navigate,
-} from 'react-router-dom'
-import { AuthProvider } from './contexts/AuthContext'
-import LoginPage from './components/LoginPage'
-import Layout from './components/Layout'
-import Dashboard from './pages/Dashboard'
-import Leads from './pages/Leads'
-import Samples from './pages/Samples'
-import Quotes from './pages/Quotes'
-import Orders from './pages/Orders'
-import Shipping from './pages/Shipping'
-import Users from './pages/Users'
-import ProtectedRoute from './components/ProtectedRoute'
-import { RoleProtectedRoute } from './components/RoleProtectedRoute'
+} from 'react-router-dom';
+import { AuthProvider } from './contexts/AuthContext';
+import LoginPage from './components/LoginPage';
+import Layout from './components/Layout';
+import Dashboard from './pages/Dashboard';
+import Leads from './pages/Leads';
+import Samples from './pages/Samples';
+import Quotes from './pages/Quotes';
+import Orders from './pages/Orders';
+import Shipping from './pages/Shipping';
+import Users from './pages/Users';
+import Pricing from './pages/Pricing';
+import ProtectedRoute from './components/ProtectedRoute';
+import { RoleProtectedRoute } from './components/RoleProtectedRoute';
 
 function App() {
   return (
@@ -57,6 +58,14 @@ function App() {
               }
             />
             <Route
+              path="pricing"
+              element={
+                <RoleProtectedRoute requiredPermission="canViewDashboard">
+                  <Pricing />
+                </RoleProtectedRoute>
+              }
+            />
+            <Route
               path="orders"
               element={
                 <RoleProtectedRoute requiredPermission="canViewOrders">
@@ -85,7 +94,7 @@ function App() {
         </Routes>
       </Router>
     </AuthProvider>
-  )
+  );
 }
 
-export default App
+export default App;

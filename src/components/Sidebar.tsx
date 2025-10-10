@@ -8,12 +8,13 @@ import {
   UserPlus,
   FileText,
   Quote,
-} from 'lucide-react'
+  Calculator,
+} from 'lucide-react';
 // import { useState } from 'react';
-import { NavLink } from 'react-router-dom'
-import { Button } from '../components/ui/button'
-import { useAuth } from '@/contexts/AuthContext'
-import { ROLE_DISPLAY_NAMES, BackendRole, UserRole } from '@/types/user'
+import { NavLink } from 'react-router-dom';
+import { Button } from '../components/ui/button';
+import { useAuth } from '@/contexts/AuthContext';
+import { ROLE_DISPLAY_NAMES, BackendRole, UserRole } from '@/types/user';
 
 // Helper function to map backend roles to frontend roles
 const mapBackendRoleToFrontend = (backendRole: BackendRole): UserRole => {
@@ -21,17 +22,17 @@ const mapBackendRoleToFrontend = (backendRole: BackendRole): UserRole => {
     super: 'super_user',
     user: 'user',
     mini: 'mini_user',
-  }
-  return roleMap[backendRole]
-}
+  };
+  return roleMap[backendRole];
+};
 
 interface SidebarProps {
-  collapsed: boolean
-  onToggle: () => void
+  collapsed: boolean;
+  onToggle: () => void;
 }
 
 export function Sidebar({ collapsed, onToggle }: SidebarProps) {
-  const { logout, currentUser, hasPermission } = useAuth()
+  const { logout, currentUser, hasPermission } = useAuth();
 
   const navigation = [
     {
@@ -59,6 +60,12 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
       permission: 'canViewDashboard' as const,
     },
     {
+      name: 'Pricing',
+      href: '/pricing',
+      icon: Calculator,
+      permission: 'canViewDashboard' as const,
+    },
+    {
       name: 'Orders',
       href: '/orders',
       icon: Quote,
@@ -76,7 +83,7 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
       icon: Users,
       permission: 'canManageUsers' as const,
     },
-  ].filter((item) => hasPermission(item.permission))
+  ].filter((item) => hasPermission(item.permission));
 
   return (
     <div
@@ -178,5 +185,5 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
         </Button>
       </div>
     </div>
-  )
+  );
 }
