@@ -24,6 +24,8 @@ import {
   ImportResponse,
 } from '@/types/pricing';
 import { createImport, uploadImportItems } from '@/api/pricing';
+import { USE_MOCK_API } from '@/api/pricing.mock';
+import { usePricingBackend } from '@/api/pricing.adapter';
 
 interface UploadMapSectionProps {
   onImportComplete: (importId: string, items: PricingItem[]) => void;
@@ -42,6 +44,8 @@ const REQUIRED_FIELDS = [
 export default function UploadMapSection({
   onImportComplete,
 }: UploadMapSectionProps) {
+  const backendAdapter = usePricingBackend('default'); // Use default org like ExcelUpload
+
   const [file, setFile] = useState<File | null>(null);
   const [headers, setHeaders] = useState<string[]>([]);
   const [mapping, setMapping] = useState<ColumnMapping>({});
@@ -173,22 +177,40 @@ export default function UploadMapSection({
   };
 
   const handleSubmit = async () => {
-    const items = validateAndPrepareItems();
-    if (!items) return;
+    if (!file) return;
 
     setIsUploading(true);
     try {
-      // Create import
-      const { importId } = await createImport('default');
+      if (USE_MOCK_API) {
+        // Mock mode: Parse Excel and send items
+        const items = validateAndPrepareItems();
+        if (!items) {
+          setIsUploading(false);
+          return;
+        }
 
-      // Upload items
-      const response: ImportResponse = await uploadImportItems(importId, items);
+        const { importId } = await createImport('default');
+        const response: ImportResponse = await uploadImportItems(
+          importId,
+          items
+        );
 
-      if (response.validationErrors && response.validationErrors.length > 0) {
-        setValidationErrors(response.validationErrors);
+        if (response.validationErrors && response.validationErrors.length > 0) {
+          setValidationErrors(response.validationErrors);
+        } else {
+          setUploadSuccess(true);
+          onImportComplete(importId, items);
+        }
       } else {
+        // Real backend: Send raw Excel file
+        const result = await backendAdapter.uploadFile(file, file.name);
+
+        // For real backend, we need to parse to show items count
+        // But backend has already validated and stored the data
+        const items = validateAndPrepareItems();
+
         setUploadSuccess(true);
-        onImportComplete(importId, items);
+        onImportComplete(result.importId, items || []);
       }
     } catch (error) {
       console.error('Upload failed:', error);
@@ -197,7 +219,10 @@ export default function UploadMapSection({
           row: 0,
           sku: '',
           field: 'Upload',
-          message: 'Failed to upload items. Please try again.',
+          message:
+            error instanceof Error
+              ? error.message
+              : 'Failed to upload items. Please try again.',
         },
       ]);
     } finally {

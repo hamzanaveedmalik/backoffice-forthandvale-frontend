@@ -1,55 +1,55 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react';
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from './ui/card'
-import { Input } from './ui/input'
-import { Button } from './ui/button'
-import { Label } from './ui/label'
-import { Alert, AlertDescription } from './ui/alert'
-import { Eye, EyeOff } from 'lucide-react'
-import { useAuth } from '../contexts/AuthContext'
-import { useNavigate } from 'react-router-dom'
+} from './ui/card';
+import { Input } from './ui/input';
+import { Button } from './ui/button';
+import { Label } from './ui/label';
+import { Alert, AlertDescription } from './ui/alert';
+import { Eye, EyeOff } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 const LoginPage: React.FC = () => {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [showPassword, setShowPassword] = useState(false)
-  const [error, setError] = useState('')
-  const [isLoading, setIsLoading] = useState(false)
-  const { login, isAuthenticated } = useAuth()
-  const navigate = useNavigate()
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const { login, isAuthenticated } = useAuth();
+  const navigate = useNavigate();
 
   // Redirect to dashboard if already authenticated
   useEffect(() => {
     if (isAuthenticated) {
-      navigate('/')
+      navigate('/');
     }
-  }, [isAuthenticated, navigate])
+  }, [isAuthenticated, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError('')
-    setIsLoading(true)
+    e.preventDefault();
+    setError('');
+    setIsLoading(true);
 
     try {
-      const success = await login(email, password)
+      const success = await login(email, password);
       if (success) {
-        navigate('/')
+        navigate('/');
       } else {
-        setError('Invalid email or password. Please try again.')
-        setPassword('')
+        setError('Invalid email or password. Please try again.');
+        setPassword('');
       }
     } catch (error) {
-      setError('An error occurred during login. Please try again.')
-      setPassword('')
+      setError('An error occurred during login. Please try again.');
+      setPassword('');
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
@@ -136,16 +136,9 @@ const LoginPage: React.FC = () => {
             </form>
           </CardContent>
         </Card>
-
-        <div className="text-center text-xs text-gray-500">
-          <p>Demo accounts:</p>
-          <p>• admin@forthvale.com / admin123 (Super User)</p>
-          <p>• manager@forthvale.com / manager123 (User)</p>
-          <p>• viewer@forthvale.com / viewer123 (Mini User)</p>
-        </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default LoginPage
+export default LoginPage;

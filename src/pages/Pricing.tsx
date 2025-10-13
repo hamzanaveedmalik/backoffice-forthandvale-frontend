@@ -3,6 +3,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Calculator } from 'lucide-react';
 import { USE_MOCK_API } from '@/api/pricing.mock';
+import { usePricingBackend } from '@/api/pricing.adapter';
 import UploadMapSection from '@/components/UploadMapSection';
 import ConfigurationSection from '@/components/ConfigurationSection';
 import ResultsTable from '@/components/ResultsTable';
@@ -20,6 +21,8 @@ import {
 } from '@/api/pricing';
 
 export default function Pricing() {
+  const backendAdapter = usePricingBackend('default'); // Use default org like ExcelUpload
+
   const [activeTab, setActiveTab] = useState('upload');
   const [importId, setImportId] = useState<string | null>(null);
   const [uploadedItems, setUploadedItems] = useState<PricingItem[]>([]);
@@ -40,21 +43,41 @@ export default function Pricing() {
 
     setIsCalculating(true);
     try {
-      // Create pricing run
-      const runResponse = await createPricingRun({
-        importId,
-        config,
-      });
+      if (USE_MOCK_API) {
+        // Mock mode
+        const runResponse = await createPricingRun({
+          importId,
+          config,
+        });
 
-      setCurrentRunId(runResponse.runId);
+        setCurrentRunId(runResponse.runId);
 
-      // Calculate pricing
-      const calculationResponse = await calculatePricingRun(runResponse.runId);
-      setResults(calculationResponse);
+        const calculationResponse = await calculatePricingRun(
+          runResponse.runId
+        );
+        setResults(calculationResponse);
+      } else {
+        // Real backend
+        const runResponse = await backendAdapter.createPricingRun(
+          importId,
+          config
+        );
+        setCurrentRunId(runResponse.runId);
+
+        const calculationResponse = await backendAdapter.calculatePricing(
+          runResponse.runId
+        );
+        setResults(calculationResponse);
+      }
+
       setActiveTab('results');
     } catch (error) {
       console.error('Calculation failed:', error);
-      alert('Failed to calculate pricing. Please try again.');
+      alert(
+        error instanceof Error
+          ? error.message
+          : 'Failed to calculate pricing. Please try again.'
+      );
     } finally {
       setIsCalculating(false);
     }
@@ -64,15 +87,20 @@ export default function Pricing() {
     if (!currentRunId) return;
 
     try {
-      const blob = await exportPricingResults(currentRunId, 'csv');
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `pricing-results-${currentRunId}.csv`;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
+      if (USE_MOCK_API) {
+        const blob = await exportPricingResults(currentRunId, 'csv');
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `pricing-results-${currentRunId}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+      } else {
+        // Real backend handles download directly
+        backendAdapter.exportResults(currentRunId);
+      }
     } catch (error) {
       console.error('Export failed:', error);
       alert('Failed to export results. Please try again.');
@@ -86,7 +114,11 @@ export default function Pricing() {
     if (!name) return;
 
     try {
-      await savePricingRun(currentRunId, name);
+      if (USE_MOCK_API) {
+        await savePricingRun(currentRunId, name);
+      } else {
+        await backendAdapter.savePricingRun(currentRunId, name);
+      }
       alert('Pricing run saved successfully!');
     } catch (error) {
       console.error('Save failed:', error);
@@ -98,7 +130,10 @@ export default function Pricing() {
     if (!currentRunId) return;
 
     try {
-      const duplicateResponse = await duplicatePricingRun(currentRunId);
+      const duplicateResponse = USE_MOCK_API
+        ? await duplicatePricingRun(currentRunId)
+        : await backendAdapter.duplicatePricingRun(currentRunId);
+
       alert(`Pricing run duplicated! New run ID: ${duplicateResponse.runId}`);
       // Optionally, you could load the duplicate run immediately
     } catch (error) {
@@ -140,11 +175,6 @@ export default function Pricing() {
           Upload product data, configure pricing parameters, and calculate
           landed costs
         </p>
-        {USE_MOCK_API && (
-          <p className="text-xs text-blue-600 mt-1">
-            Using mock data for testing. Backend endpoints not yet available.
-          </p>
-        )}
       </div>
 
       <Tabs
@@ -195,30 +225,6 @@ export default function Pricing() {
           />
         </TabsContent>
       </Tabs>
-
-      {/* Smoke Test Instructions (Development Only) */}
-      {(import.meta as any).env?.DEV && uploadedItems.length > 0 && (
-        <div className="mt-8 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-          <h3 className="font-semibold text-blue-900 mb-2">🧪 Smoke Test</h3>
-          <div className="text-sm text-blue-800 space-y-1">
-            <p>
-              After upload, verify that SKU <strong>FNV-1001</strong> appears
-              with computed values:
-            </p>
-            <ul className="list-disc list-inside ml-4 space-y-1">
-              <li>CIF value (Base + Freight + Insurance)</li>
-              <li>Duty amount (based on HS code)</li>
-              <li>VAT/Tax amount</li>
-              <li>Landed Cost (sum of all costs)</li>
-              <li>Sell Price (based on margin/markup mode)</li>
-            </ul>
-            <p className="mt-2">
-              Toggle margin mode (Margin ↔ Markup) and verify Sell price updates
-              consistently.
-            </p>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
