@@ -18,7 +18,7 @@ import {
 // Enable/disable mock mode
 // Set to false to use real backend (data persists in database)
 // Set to true to use mock data (resets on refresh)
-export const USE_MOCK_API = false; // ← CHANGE THIS to switch backend (CORS fixed, testing real backend)
+export const USE_MOCK_API = true; // ← DEMO MODE: Using mock data, no real API calls
 
 // Simulated API delay
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));

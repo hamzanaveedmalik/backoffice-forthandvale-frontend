@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
 import { Calculator } from 'lucide-react';
 import { USE_MOCK_API } from '@/api/pricing.mock';
 import { usePricingBackend } from '@/api/pricing.adapter';
@@ -162,14 +161,6 @@ export default function Pricing() {
             <Calculator className="h-8 w-8" />
             Pricing / Cost Module
           </h1>
-          {USE_MOCK_API && (
-            <Badge
-              variant="outline"
-              className="bg-blue-50 text-blue-700 border-blue-300"
-            >
-              🧪 Mock Mode
-            </Badge>
-          )}
         </div>
         <p className="text-muted-foreground mt-1">
           Upload product data, configure pricing parameters, and calculate
