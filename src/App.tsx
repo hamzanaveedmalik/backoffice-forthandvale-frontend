@@ -7,6 +7,7 @@ import {
 import { AuthProvider } from './contexts/AuthContext';
 import LoginPage from './components/LoginPage';
 import Layout from './components/Layout';
+import HomePage from './pages/HomePage';
 import Dashboard from './pages/Dashboard';
 import Leads from './pages/Leads';
 import Samples from './pages/Samples';
@@ -14,7 +15,9 @@ import Quotes from './pages/Quotes';
 import Orders from './pages/Orders';
 import Shipping from './pages/Shipping';
 import Users from './pages/Users';
+import Costing from './pages/Costing';
 import Pricing from './pages/Pricing';
+import Billing from './pages/Billing';
 import ProtectedRoute from './components/ProtectedRoute';
 import { RoleProtectedRoute } from './components/RoleProtectedRoute';
 
@@ -28,11 +31,27 @@ function App() {
             path="/"
             element={
               <ProtectedRoute>
+                <HomePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/app"
+            element={
+              <ProtectedRoute>
                 <Layout />
               </ProtectedRoute>
             }
           >
             <Route index element={<Dashboard />} />
+            <Route
+              path="dashboard"
+              element={
+                <RoleProtectedRoute requiredPermission="canViewDashboard">
+                  <Dashboard />
+                </RoleProtectedRoute>
+              }
+            />
             <Route
               path="leads"
               element={
@@ -58,10 +77,26 @@ function App() {
               }
             />
             <Route
+              path="costing"
+              element={
+                <RoleProtectedRoute requiredPermission="canViewDashboard">
+                  <Costing />
+                </RoleProtectedRoute>
+              }
+            />
+            <Route
               path="pricing"
               element={
                 <RoleProtectedRoute requiredPermission="canViewDashboard">
                   <Pricing />
+                </RoleProtectedRoute>
+              }
+            />
+            <Route
+              path="billing"
+              element={
+                <RoleProtectedRoute requiredPermission="canViewDashboard">
+                  <Billing />
                 </RoleProtectedRoute>
               }
             />

@@ -8,7 +8,7 @@ import {
   UserPlus,
   FileText,
   Quote,
-  Calculator,
+  Home,
 } from 'lucide-react';
 // import { useState } from 'react';
 import { NavLink } from 'react-router-dom';
@@ -36,50 +36,50 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
 
   const navigation = [
     {
-      name: 'Dashboard',
+      name: 'Home',
       href: '/',
+      icon: Home,
+      permission: 'canViewDashboard' as const,
+    },
+    {
+      name: 'Dashboard',
+      href: '/app/dashboard',
       icon: LayoutDashboard,
       permission: 'canViewDashboard' as const,
     },
     {
       name: 'Leads',
-      href: '/leads',
+      href: '/app/leads',
       icon: UserPlus,
       permission: 'canViewDashboard' as const,
     },
     {
       name: 'Samples',
-      href: '/samples',
+      href: '/app/samples',
       icon: Package,
       permission: 'canViewDashboard' as const,
     },
     {
       name: 'Quotes',
-      href: '/quotes',
+      href: '/app/quotes',
       icon: FileText,
       permission: 'canViewDashboard' as const,
     },
     {
-      name: 'Pricing',
-      href: '/pricing',
-      icon: Calculator,
-      permission: 'canViewDashboard' as const,
-    },
-    {
       name: 'Orders',
-      href: '/orders',
+      href: '/app/orders',
       icon: Quote,
       permission: 'canViewOrders' as const,
     },
     {
       name: 'Shipping',
-      href: '/shipping',
+      href: '/app/shipping',
       icon: Truck,
       permission: 'canViewShipping' as const,
     },
     {
       name: 'Users',
-      href: '/users',
+      href: '/app/users',
       icon: Users,
       permission: 'canManageUsers' as const,
     },
@@ -94,7 +94,7 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
       {/* Header */}
       <div className="p-4 border-b border-border">
         <div className="flex items-center justify-between">
-          {!collapsed ? (
+          {!collapsed && (
             <div className="flex flex-col items-center gap-2">
               <img
                 src="/fandv-logo.png"
@@ -105,12 +105,6 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
                 Business Dashboard
               </p>
             </div>
-          ) : (
-            <img
-              src="/fandv-logo.png"
-              alt="FORTH & VALE Logo"
-              className="w-[70%] h-auto object-contain mx-auto"
-            />
           )}
           <Button
             variant="ghost"
