@@ -13,7 +13,6 @@ import { Badge } from '@/components/ui/badge';
 import {
   Plus,
   Search,
-  Filter,
   Download,
   Eye,
   Edit,
@@ -21,10 +20,6 @@ import {
   FileText,
   DollarSign,
   Calendar,
-  User,
-  Mail,
-  Phone,
-  MapPin,
   ArrowLeft,
   MoreHorizontal,
   X,
@@ -34,7 +29,23 @@ import {
 import { Link } from 'react-router-dom';
 import jsPDF from 'jspdf';
 
-// Empty state - no mock data
+// Invoice interface
+interface Invoice {
+  id: string;
+  customer: string;
+  email: string;
+  amount: number;
+  status: 'draft' | 'sent' | 'pending' | 'paid' | 'overdue' | 'cancelled';
+  dueDate: string;
+  issueDate: string;
+  items: number;
+  discountType: 'percentage' | 'fixed';
+  discountValue: number;
+  discountAmount: number;
+  subtotal: number;
+  subtotalAfterDiscount: number;
+  taxAmount: number;
+}
 
 const statusColors = {
   paid: 'bg-green-100 text-green-800',
@@ -44,7 +55,7 @@ const statusColors = {
 };
 
 const Billing: React.FC = () => {
-  const [invoices, setInvoices] = useState([]);
+  const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [showCreateForm, setShowCreateForm] = useState(false);
@@ -57,7 +68,7 @@ const Billing: React.FC = () => {
     dueDate: '',
     items: [{ description: '', quantity: 1, unitPrice: 0, total: 0 }],
     taxRate: 0,
-    discountType: 'percentage',
+    discountType: 'percentage' as 'percentage' | 'fixed',
     discountValue: 0,
     notes: '',
     terms: 'Payment due within 30 days of invoice date.',
@@ -172,12 +183,12 @@ const Billing: React.FC = () => {
     const pageHeight = doc.internal.pageSize.getHeight();
 
     // Colors
-    const primaryColor = [147, 51, 234]; // Purple color
-    const textColor = [31, 41, 55]; // Gray-800
-    const lightGray = [156, 163, 175]; // Gray-400
+    const primaryColor = [147, 51, 234] as const; // Purple color
+    const textColor = [31, 41, 55] as const; // Gray-800
+    const lightGray = [156, 163, 175] as const; // Gray-400
 
     // Simple Header
-    doc.setFillColor(...primaryColor);
+    doc.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
     doc.rect(0, 0, pageWidth, 50, 'F');
 
     // Company name
@@ -193,7 +204,7 @@ const Billing: React.FC = () => {
     doc.text('+92 300 1234567', 20, 42);
 
     // Invoice details
-    doc.setTextColor(...textColor);
+    doc.setTextColor(textColor[0], textColor[1], textColor[2]);
     doc.setFontSize(20);
     doc.setFont('helvetica', 'bold');
     doc.text('INVOICE', pageWidth - 60, 20);
@@ -208,7 +219,7 @@ const Billing: React.FC = () => {
     let yPosition = 70;
     doc.setFontSize(14);
     doc.setFont('helvetica', 'bold');
-    doc.setTextColor(...textColor);
+    doc.setTextColor(textColor[0], textColor[1], textColor[2]);
     doc.text('Bill To:', 20, yPosition);
 
     yPosition += 10;
@@ -230,7 +241,7 @@ const Billing: React.FC = () => {
     yPosition = Math.max(yPosition + 20, 120);
 
     // Table header
-    doc.setFillColor(...primaryColor);
+    doc.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
     doc.rect(20, yPosition - 8, pageWidth - 40, 12, 'F');
 
     doc.setTextColor(255, 255, 255);
@@ -251,7 +262,7 @@ const Billing: React.FC = () => {
 
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(10);
-      doc.setTextColor(...textColor);
+      doc.setTextColor(textColor[0], textColor[1], textColor[2]);
 
       // Item description (with word wrapping)
       const description = item.description || `Item ${index + 1}`;
@@ -273,7 +284,7 @@ const Billing: React.FC = () => {
 
     doc.setFontSize(10);
     doc.setFont('helvetica', 'normal');
-    doc.setTextColor(...textColor);
+    doc.setTextColor(textColor[0], textColor[1], textColor[2]);
 
     // Subtotal
     doc.text('Subtotal:', totalsX - 30, yPosition);
@@ -299,7 +310,7 @@ const Billing: React.FC = () => {
       );
       yPosition += 8;
 
-      doc.setTextColor(...textColor);
+      doc.setTextColor(textColor[0], textColor[1], textColor[2]);
       doc.text('After discount:', totalsX - 30, yPosition);
       doc.text(
         `$${(invoiceData.subtotalAfterDiscount || 0).toFixed(2)}`,
@@ -317,7 +328,7 @@ const Billing: React.FC = () => {
     // Total
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(12);
-    doc.setTextColor(...primaryColor);
+    doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
     doc.text('Total:', totalsX - 30, yPosition);
     doc.text(`$${(invoiceData.total || 0).toFixed(2)}`, totalsX, yPosition);
 
@@ -349,7 +360,7 @@ const Billing: React.FC = () => {
     // Footer
     const footerY = pageHeight - 20;
     doc.setFontSize(8);
-    doc.setTextColor(...lightGray);
+    doc.setTextColor(lightGray[0], lightGray[1], lightGray[2]);
     doc.text('Thank you for your business!', 20, footerY);
     doc.text('Powered by Intelliwave.co', pageWidth - 60, footerY);
 
@@ -359,12 +370,12 @@ const Billing: React.FC = () => {
 
   // Save invoice
   const saveInvoice = () => {
-    const newInvoice = {
+    const newInvoice: Invoice = {
       id: `INV-${Date.now()}`,
       customer: invoiceForm.customerName,
       email: invoiceForm.customerEmail,
       amount: calculateTotal(),
-      status: 'draft',
+      status: 'draft' as const,
       dueDate: invoiceForm.dueDate,
       issueDate: invoiceForm.issueDate,
       items: invoiceForm.items.length,
