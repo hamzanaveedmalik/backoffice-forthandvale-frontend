@@ -76,6 +76,7 @@ export default function ResultsTable({
         className="flex items-center border-b hover:bg-muted/50 text-sm"
       >
         <div className="w-32 px-4 py-2 font-medium truncate">{item.sku}</div>
+        <div className="w-48 px-4 py-2 truncate">{item.productName}</div>
         <div className="w-24 px-4 py-2 text-right">
           {item.basePKR.toFixed(2)}
         </div>
@@ -102,6 +103,9 @@ export default function ResultsTable({
         </div>
         <div className="w-24 px-4 py-2 text-right">
           {formatCurrency(item.tax)}
+        </div>
+        <div className="w-24 px-4 py-2 text-right">
+          {formatCurrency(item.customPackaging)}
         </div>
         <div className="w-28 px-4 py-2 text-right font-semibold">
           {formatCurrency(item.landedCost)}
@@ -276,6 +280,7 @@ export default function ResultsTable({
             {/* Header */}
             <div className="flex items-center bg-muted font-medium text-sm border-b">
               <div className="w-32 px-4 py-3">SKU</div>
+              <div className="w-48 px-4 py-3">Product Name</div>
               <div className="w-24 px-4 py-3 text-right">Base PKR</div>
               <div className="w-24 px-4 py-3 text-right">FX</div>
               <div className="w-24 px-4 py-3 text-right">
@@ -287,6 +292,7 @@ export default function ResultsTable({
               <div className="w-24 px-4 py-3 text-right">Duty</div>
               <div className="w-24 px-4 py-3 text-right">Fees</div>
               <div className="w-24 px-4 py-3 text-right">Tax</div>
+              <div className="w-24 px-4 py-3 text-right">Custom Pack</div>
               <div className="w-28 px-4 py-3 text-right">Landed Cost</div>
               <div className="w-24 px-4 py-3 text-right">Sell</div>
               <div className="w-20 px-4 py-3 text-right">Margin%</div>
@@ -312,7 +318,12 @@ export default function ResultsTable({
                 <Card key={item.sku} className="p-4">
                   <div className="space-y-2 text-sm">
                     <div className="flex justify-between font-semibold">
-                      <span>{item.sku}</span>
+                      <div>
+                        <div className="text-sm font-medium">{item.sku}</div>
+                        <div className="text-xs text-muted-foreground">
+                          {item.productName}
+                        </div>
+                      </div>
                       <Badge
                         variant={
                           item.marginPercent >= 30 ? 'default' : 'secondary'
@@ -329,6 +340,16 @@ export default function ResultsTable({
                       <div>
                         <span className="text-muted-foreground">Sell:</span>{' '}
                         {formatCurrency(item.sell)}
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground">
+                          Custom Pack:
+                        </span>{' '}
+                        {formatCurrency(item.customPackaging)}
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground">Margin:</span>{' '}
+                        {item.marginPercent.toFixed(1)}%
                       </div>
                     </div>
                     <Button

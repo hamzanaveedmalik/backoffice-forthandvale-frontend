@@ -262,6 +262,7 @@ export class PricingBackendAdapter {
         duty: breakdown.duty || 0,
         fees: breakdown.fees || 0,
         tax: breakdown.tax || 0,
+        customPackaging: breakdown.customPackaging || 0,
         landedCost: parseFloat(item.landedCost || '0'),
         sell: parseFloat(item.sellingPrice || '0'),
         marginPercent: parseFloat(item.marginPct || '0') * 100, // 0.35 → 35

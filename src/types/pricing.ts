@@ -6,6 +6,7 @@ export interface PricingItem {
   unitsPerOrder: number;
   weightKg: number;
   volumeM3: number;
+  customPackagingPKR: number;
 }
 
 export interface ValidationError {
@@ -99,6 +100,7 @@ export interface PricingResultItem {
   duty: number;
   fees: number;
   tax: number;
+  customPackaging: number;
   landedCost: number;
   sell: number;
   marginPercent: number;
@@ -126,6 +128,7 @@ export interface ColumnMapping {
   unitsPerOrder?: string;
   weightKg?: string;
   volumeM3?: string;
+  customPackagingPKR?: string;
 }
 
 export const CURRENCY_SYMBOLS: Record<Country, string> = {

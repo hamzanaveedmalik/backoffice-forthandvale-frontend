@@ -120,8 +120,11 @@ export async function mockCalculatePricingRun(
     const taxableValue = cif + duty + fees;
     const tax = (taxableValue * taxRate) / 100;
 
+    // Convert custom packaging from PKR to destination currency
+    const customPackaging = (item.customPackagingPKR || 0) * fxRate;
+
     // Landed cost
-    const landedCost = cif + duty + fees + tax;
+    const landedCost = cif + duty + fees + tax + customPackaging;
 
     // Calculate sell price based on margin mode
     let sell = 0;
@@ -192,6 +195,7 @@ export async function mockCalculatePricingRun(
       duty,
       fees,
       tax,
+      customPackaging,
       landedCost,
       sell,
       marginPercent,
